@@ -119,22 +119,27 @@ git clone https://github.com/TauricResearch/TradingAgents.git
 cd TradingAgents
 ```
 
-TradingAgents needs Python 3.11 or later. Create a virtual environment in any of your favorite environment managers:
+TradingAgents needs Python 3.11 or later and [Poetry 2.5](https://python-poetry.org/docs/#installation). Python 3.13 is recommended and recorded in `.python-version`.
+
+Install the locked dependencies (including development tools) into the project's `.venv`:
 ```bash
-conda create -n tradingagents python=3.13
-conda activate tradingagents
+poetry env use python3.13
+make install
+cp .env.example .env  # only on first setup; configure your provider here
 ```
 
-Or with [uv](https://docs.astral.sh/uv/):
+Launch the interactive CLI with `make` or `make run`. With a ChatGPT Plus or Pro subscription, set `TRADINGAGENTS_LLM_PROVIDER=chatgpt` in `.env`, then sign in once:
 ```bash
-uv venv --python 3.13
-source .venv/bin/activate
+make login
+make
 ```
 
-Install the package and its dependencies (`uv pip install .` with uv):
+Pass CLI options through `ARGS`, for example:
 ```bash
-pip install .
+make run ARGS="--ticker NVDA --date 2026-11-10 --analysts market --save --no-show"
 ```
+
+Use `make lint`, `make test`, or `make check` for validation. After changing dependencies with `poetry add`, include both `pyproject.toml` and `poetry.lock` in the change. Poetry manages the source checkout's dependencies; setuptools continues to build the distributable package and reads its version from `tradingagents.__version__`. Install the optional Bedrock dependencies with `poetry install -E bedrock`.
 
 ### Docker
 
@@ -200,9 +205,11 @@ cp .env.example .env
 
 Launch the interactive CLI:
 ```bash
-tradingagents          # installed command
-python -m cli.main     # alternative: run directly from source
+make                             # alternative: make run
+poetry run python -m cli.main     # run directly from source
 ```
+For the examples below that use the installed `tradingagents` command, a source checkout can use `poetry run python -m cli.main` in its place.
+
 You will see a screen where you can select your desired tickers, analysis date, LLM provider, research depth, and more. Your previous run's answers come back as the defaults, so pressing Enter accepts them. The `TRADINGAGENTS_*` variables in `.env` still skip their step entirely.
 
 To run without questions, for a scheduled job or a script, answer the per-run steps with flags and the rest with `TRADINGAGENTS_*` variables:
